@@ -1,0 +1,11 @@
+[Unit]
+Description=SysLinuxOS ring conky - detect CPU thread count and active network interface
+After=multi-user.target
+
+[Service]
+Type=oneshot
+ExecStart=/opt/scripts/check_cpu.sh
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

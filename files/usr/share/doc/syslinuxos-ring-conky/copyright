@@ -1,0 +1,31 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: Auzia Conky
+Upstream-Contact: Zineddine SAIBI
+Source: https://github.com/SZinedine/auzia-conky
+Comment:
+ syslinuxos-ring-conky e' un fork di Auzia Conky (basato sul template
+ Namoudaj Conky, stesso autore). Fork, funzione di auto-scaling in base alla
+ risoluzione e packaging per SysLinuxOS a cura di Franco Conidi (edmond).
+
+Files: *
+Copyright: Copyright (C) Zineddine SAIBI (Auzia Conky / Namoudaj Conky)
+License: GPL-3.0+
+
+Files: rc/scale.lua debian/* build-deb.sh
+Copyright: Copyright (C) Franco Conidi (edmond) <fconidi@gmail.com>
+ https://syslinuxos.com - https://francoconidi.it
+License: GPL-3.0+
+
+License: GPL-3.0+
+ This program is free software: you can redistribute it and/or modify it
+ under the terms of the GNU General Public License as published by the Free
+ Software Foundation, either version 3 of the License, or (at your option)
+ any later version.
+ .
+ This program is distributed in the hope that it will be useful, but WITHOUT
+ ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+ .
+ On Debian systems, the complete text of the GNU General Public License
+ version 3 can be found in "/usr/share/common-licenses/GPL-3", and in the
+ file LICENSE shipped in /opt/Sys-ring-conky/LICENSE.

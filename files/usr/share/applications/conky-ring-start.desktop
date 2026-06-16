@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Conky-ring-start
+Exec=/opt/scripts/conky-ring-start.sh
+StartupNotify=false
+Terminal=false
+Icon=/usr/share/icons/logo-green-64.png
+Categories=System;Monitor;

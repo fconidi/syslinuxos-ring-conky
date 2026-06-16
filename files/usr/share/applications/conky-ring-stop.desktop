@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Conky-ring-stop
+Exec=/opt/scripts/conky-ring-stop.sh
+StartupNotify=false
+Terminal=false
+Icon=/usr/share/icons/logo-red-64.png
+Categories=System;Monitor;
