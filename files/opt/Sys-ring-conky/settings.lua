@@ -38,11 +38,10 @@ valid values are: 0, 2, 4, 6, 8, 10, 12
 cpu_cores = 4
 
 --[[
-EDIT THIS to match your network interface.
-You can find out by executing `ifconfig` or `ip link`.
-It might be "wlan0", "eth0", "wlp3s0" or something else
+The interface is detected from the default route; set CONKY_NET_INTERFACE
+when a specific interface must be monitored.
 ]]
-net_interface = "wlan0"
+net_interface = os.getenv("CONKY_NET_INTERFACE") or "auto"
 
 --[[
 this depends on your own internet speed
@@ -78,6 +77,7 @@ end
 -- by using the functions color_frompercent(perc) and color_frompercent_reverse(perc)
 threshold_warning          = 60
 threshold_critical         = 80
+temperature_warning        = 70
+temperature_critical       = 85
 battery_threshold_warning  = 30
 battery_threshold_critical = 18
-

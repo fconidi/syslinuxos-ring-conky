@@ -318,6 +318,7 @@ end
 ---@return string
 function color_frompercent(percent)
     local  perc = tonumber(percent)
+    if not perc then return colors.fg end
     if     perc > threshold_critical then return colors.critic
     elseif perc > threshold_warning  then return colors.warn
     else                                  return colors.fg
@@ -331,10 +332,22 @@ end
 ---@return string
 function color_frompercent_reverse(percent)
     local perc = tonumber(percent)
+    if not perc then return colors.fg end
     if      perc < battery_threshold_critical then return colors.critic
     elseif  perc < battery_threshold_warning  then return colors.warn
     else                                           return colors.fg
     end
+end
+
+---return a color according to a temperature value
+---@param temperature number|string
+---@return string
+function color_fromtemperature(temperature)
+    local value = tonumber(temperature)
+    if not value then return colors.fg end
+    if value >= temperature_critical then return colors.critic end
+    if value >= temperature_warning then return colors.warn end
+    return colors.fg
 end
 
 
@@ -347,6 +360,26 @@ end
 
 
 -- Variable definitions to avoir repeating the same string concatenations
+local function command_output(command)
+    local handle = io.popen(command)
+    if not handle then return "" end
+    local output = handle:read("*a") or ""
+    handle:close()
+    return output:gsub("^%s+", ""):gsub("%s+$", "")
+end
+
+local function detect_network_interface()
+    local iface = command_output("ip route get 1.1.1.1 2>/dev/null | awk '/dev/{for (i=1;i<=NF;i++) if ($i == \"dev\") {print $(i+1); exit}}'")
+    if iface ~= "" then return iface end
+    iface = command_output("ip route show default 2>/dev/null | awk 'NR==1 {print $5}'")
+    if iface ~= "" then return iface end
+    return "lo"
+end
+
+if net_interface == nil or net_interface == "" or net_interface == "auto" then
+    net_interface = detect_network_interface()
+end
+
 local _download_speed    = "downspeed "               .. net_interface
 local _download_speed_kb = "downspeedf "              .. net_interface
 local _download_total    = "totaldown "               .. net_interface
@@ -442,6 +475,42 @@ function cpu_temperature()
 end
 function cpu_temperature_sensors()  return cpu_temperature() end            --  kept for compatibility
 
+local hardware_cache = {}
+
+local function cached_command(name, interval, command)
+    local now = tonumber(updates()) or 0
+    local cached = hardware_cache[name]
+    if cached == nil or now - cached.at >= interval then
+        hardware_cache[name] = {
+            at = now,
+            value = command_output(command)
+        }
+    end
+    return hardware_cache[name].value
+end
+
+function gpu_temperature()
+    return cached_command("gpu_temperature", 5,
+        "if command -v nvidia-smi >/dev/null 2>&1; then " ..
+        "nvidia-smi --query-gpu=temperature.gpu --format=csv,noheader,nounits 2>/dev/null | head -1; " ..
+        "else sensors 2>/dev/null | grep -m1 -E 'edge:|junction:' | grep -oE '[0-9]+(\\.[0-9]+)?' | head -1; fi")
+end
+
+function gpu_usage()
+    return cached_command("gpu_usage", 5,
+        "if command -v nvidia-smi >/dev/null 2>&1; then " ..
+        "nvidia-smi --query-gpu=utilization.gpu --format=csv,noheader,nounits 2>/dev/null | head -1; " ..
+        "elif [ -r /sys/class/drm/card0/device/gpu_busy_percent ]; then " ..
+        "cat /sys/class/drm/card0/device/gpu_busy_percent; else printf 'N/A'; fi")
+end
+
+function fan_speed()
+    return cached_command("fan_speed", 5,
+        "if command -v nvidia-smi >/dev/null 2>&1; then " ..
+        "nvidia-smi --query-gpu=fan.speed --format=csv,noheader 2>/dev/null | head -1; " ..
+        "else sensors 2>/dev/null | grep -m1 -E 'fan[0-9]+:' | awk '{print $2}'; fi")
+end
+
 
 ---@param n? number | nil
 ---@return string | nil
@@ -517,7 +586,7 @@ function update_public_ip()
     end
 
     -- fetch IP from the internet. other websites: "ifconfig.me/ip", "ident.me", "api.ipify.org"
-    local file = io.popen("curl -s http://ipinfo.io/ip") 
+    local file = io.popen("curl -4fsS --max-time 5 https://api.ipify.org 2>/dev/null")
     if not file then
         public_ip = "No Address"
         return nil
@@ -525,7 +594,7 @@ function update_public_ip()
 
     local output = file:read("*a")
     file:close()
-    if output == nil or output == "" or string.len(output) > 15  then
+    if output == nil or output == "" or string.len(output:gsub("%s", "")) > 39 then
         public_ip = "No Address"
         return nil
     end
@@ -641,4 +710,3 @@ function init_battery()
         end
     end
 end
-

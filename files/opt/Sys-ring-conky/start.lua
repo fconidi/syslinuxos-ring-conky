@@ -42,10 +42,12 @@ function draw_single_cpu_core(coreN)
     else val = cpu_temperature() -- Assuming cpu_temperature() returns the value needed
     end
 
-    ring_anticlockwise(S.cpu.x, S.cpu.y, coreN.radius, coreN.thickness, coreN.begin_angle, coreN.end_angle, val, coreN.max_value, color_frompercent(tonumber(val)))
+    local numeric_value = tonumber(val) or 0
+    local value_color = coreN.number < 0 and color_fromtemperature(val) or color_frompercent(numeric_value)
+    ring_anticlockwise(S.cpu.x, S.cpu.y, coreN.radius, coreN.thickness, coreN.begin_angle, coreN.end_angle, numeric_value, coreN.max_value, value_color)
 
     if coreN.text ~= nil then
-        write(coreN.text.x, coreN.text.y, val .. coreN.text.post_particle, 12, colors.text)
+        write(coreN.text.x, coreN.text.y, tostring(val) .. coreN.text.post_particle, 12, value_color)
     end
 end
 
@@ -56,6 +58,10 @@ function draw_cpu()
     end
 
     write_list_proccesses_cpu(160, 147, 20, 4, 12, colors.text)
+
+    local gpu_temp = gpu_temperature()
+    local gpu_temp_text = gpu_temp ~= "" and (gpu_temp .. "°C") or "N/A"
+    write(340, 125, "GPU: " .. gpu_temp_text, 11, color_fromtemperature(gpu_temp))
 end
 
 
@@ -200,4 +206,3 @@ function conky_main()
     cairo_surface_destroy(cs)
     cr = nil
 end
-
