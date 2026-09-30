@@ -376,19 +376,23 @@ local function detect_network_interface()
     return "lo"
 end
 
-if net_interface == nil or net_interface == "" or net_interface == "auto" then
-    net_interface = detect_network_interface()
-end
+-- Interface selection: a fixed value (CONKY_NET_INTERFACE) is kept as is;
+-- "auto" follows the default route and is re-detected every 10 seconds, so
+-- switching between wifi/ethernet/vpn needs no restart.
+local net_auto = (net_interface == nil or net_interface == "" or net_interface == "auto")
+local net_checked = 0
+if net_auto then net_interface = detect_network_interface() end
 
-local _download_speed    = "downspeed "               .. net_interface
-local _download_speed_kb = "downspeedf "              .. net_interface
-local _download_total    = "totaldown "               .. net_interface
-local _upload_speed      = "upspeed "                 .. net_interface
-local _upload_speed_kb   = "upspeedf "                .. net_interface
-local _upload_total      = "totalup "                 .. net_interface
-local _ssid              = "wireless_essid "          .. net_interface
-local _wifi_signal       = "wireless_link_qual_perc " .. net_interface
-local _local_ip          = "addr "                    .. net_interface
+local function net_iface()
+    if net_auto then
+        local now = os.time()
+        if now - net_checked >= 10 then
+            net_checked = now
+            net_interface = detect_network_interface()
+        end
+    end
+    return net_interface
+end
 
 
 -- functions to fetch some important system info
@@ -410,15 +414,15 @@ function memory_buffers()       return parse("buffers") end
 function swap()                 return parse("swap") end
 function swap_max()             return parse("swapmax") end
 function swap_percent()         return parse("swapperc") end
-function download_speed()       return parse(_download_speed) end           --  ex: 930B or 3kb
-function download_speed_kb()    return parse(_download_speed_kb) end        --  ex: 0.9  or 3.0
-function download_total()       return parse(_download_total) end
-function upload_speed()         return parse(_upload_speed) end             --  ex: 930B or 3kb
-function upload_speed_kb()      return parse(_upload_speed_kb) end          --  ex: 0.9  or 3.0
-function upload_total()         return parse(_upload_total) end
-function ssid()                 return parse(_ssid) end
-function wifi_signal()          return parse(_wifi_signal) end              --  value in %
-function local_ip()             return parse(_local_ip) end
+function download_speed()       return parse("downspeed " .. net_iface()) end           --  ex: 930B or 3kb
+function download_speed_kb()    return parse("downspeedf " .. net_iface()) end        --  ex: 0.9  or 3.0
+function download_total()       return parse("totaldown " .. net_iface()) end
+function upload_speed()         return parse("upspeed " .. net_iface()) end             --  ex: 930B or 3kb
+function upload_speed_kb()      return parse("upspeedf " .. net_iface()) end          --  ex: 0.9  or 3.0
+function upload_total()         return parse("totalup " .. net_iface()) end
+function ssid()                 return parse("wireless_essid " .. net_iface()) end
+function wifi_signal()          return parse("wireless_link_qual_perc " .. net_iface()) end              --  value in %
+function local_ip()             return parse("addr " .. net_iface()) end
 function gw_iface()
     local handle = io.popen("ip route | grep default | awk '{print $5}' | head -n 1")
     if not handle then return "N/A" end

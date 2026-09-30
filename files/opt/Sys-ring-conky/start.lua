@@ -47,7 +47,8 @@ function draw_single_cpu_core(coreN)
     ring_anticlockwise(S.cpu.x, S.cpu.y, coreN.radius, coreN.thickness, coreN.begin_angle, coreN.end_angle, numeric_value, coreN.max_value, value_color)
 
     if coreN.text ~= nil then
-        write(coreN.text.x, coreN.text.y, tostring(val) .. coreN.text.post_particle, 12, value_color)
+        local label = coreN.number < 0 and "CPU " or ""
+        write(coreN.text.x, coreN.text.y, label .. tostring(val) .. coreN.text.post_particle, 12, value_color)
     end
 end
 
