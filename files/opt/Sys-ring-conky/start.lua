@@ -97,17 +97,37 @@ function draw_clock()
 end
 
 
+-- backing device of a mount without the btrfs [/subvol] suffix, cached (refresh ~60s)
+local _src_cache = {}
+local function mount_source(path)
+    local c = _src_cache[path]
+    if c and os.time() - c.t < 60 then return c.v end
+    local f = io.popen("findmnt -no SOURCE " .. path .. " 2>/dev/null")
+    local out = f and f:read("*l") or ""
+    if f then f:close() end
+    local v = (out:gsub("%[.*%]$", ""))
+    _src_cache[path] = { t = os.time(), v = v }
+    return v
+end
+
 function draw_disks()
     local rt = fs_used_perc("/")
     local hm = fs_used_perc("/home")
+    local src_rt, src_hm = mount_source("/"), mount_source("/home")
+    -- same filesystem (btrfs subvolumes): / and /home report identical usage
+    local shared = src_rt ~= "" and src_rt == src_hm
     local rt_text = string.format("Root: %s / %s (%s)", fs_used("/"), fs_size("/"), fs_free("/"))
     local hm_text = string.format("Home: %s / %s (%s)", fs_used("/home"), fs_size("/home"), fs_free("/home"))
+    if shared then
+        rt_text = string.format("Root+Home: %s / %s (%s)", fs_used("/"), fs_size("/"), fs_free("/"))
+    end
 
     ring_anticlockwise(S.disk.x, S.disk.y, S.disk.radius, S.disk.thickness, S.disk.begin_angle, S.disk.end_angle, rt, 100, color_frompercent(tonumber(rt)))
-    ring_anticlockwise(S.disk.x, S.disk.y, S.disk.radius-22, S.disk.thickness, S.disk.begin_angle, S.disk.end_angle, hm, 100, color_frompercent(tonumber(hm)))
-
     write(S.disk.x+45, S.disk.y-S.disk.radius+10, rt_text, 11, colors.text)
-    write(S.disk.x+40, S.disk.y-S.disk.radius+35, hm_text, 11, colors.text)
+    if not shared then
+        ring_anticlockwise(S.disk.x, S.disk.y, S.disk.radius-22, S.disk.thickness, S.disk.begin_angle, S.disk.end_angle, hm, 100, color_frompercent(tonumber(hm)))
+        write(S.disk.x+40, S.disk.y-S.disk.radius+35, hm_text, 11, colors.text)
+    end
 
     local dsk_info = {
         "Read:  " .. diskio_read(""),

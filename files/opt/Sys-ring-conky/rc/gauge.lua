@@ -22,7 +22,7 @@ local S = {
         end_           = -200,
         text = {
             perc  = { x = 1160, y = 608 }, 
-            title = { x = 570, y = 720 }, 
+            title = { x = 570, y = 713 }, 
         },
     },
 
