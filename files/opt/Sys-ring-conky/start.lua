@@ -103,7 +103,7 @@ local _src_cache = {}
 local function mount_source(path)
     local c = _src_cache[path]
     if c and os.time() - c.t < 60 then return c.v end
-    local f = io.popen("findmnt -no SOURCE " .. path .. " 2>/dev/null")
+    local f = io.popen("findmnt -no SOURCE -T " .. path .. " 2>/dev/null")
     local out = f and f:read("*l") or ""
     if f then f:close() end
     local v = (out:gsub("%[.*%]$", ""))

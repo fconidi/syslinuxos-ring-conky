@@ -6,7 +6,7 @@
 
 set -euo pipefail
 
-PKG_VERSION="0.1.9"
+PKG_VERSION="0.1.10"
 PKG_NAME="syslinuxos-ring-conky"
 ARCH="all"
 
