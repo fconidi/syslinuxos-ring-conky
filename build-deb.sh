@@ -6,7 +6,7 @@
 
 set -euo pipefail
 
-PKG_VERSION="0.1.8"
+PKG_VERSION="0.1.9"
 PKG_NAME="syslinuxos-ring-conky"
 ARCH="all"
 
@@ -29,7 +29,7 @@ chmod 755 "$STAGING/opt/scripts/conky-ring-start.sh" \
           "$STAGING/opt/scripts/check_cpu.sh"
 chmod 644 "$STAGING/lib/systemd/system/check_cpu.service"
 find "$STAGING/opt/Sys-ring-conky" -type f -exec chmod 644 {} +
-chmod 644 "$STAGING/usr/share/applications/"*.desktop
+chmod 644 "$STAGING/usr/share/applications/"*.desktop "$STAGING/usr/share/pixmaps/"*.png
 chmod 644 "$STAGING/usr/share/doc/$PKG_NAME/"*
 
 # --- 2. DEBIAN/control ---
@@ -43,7 +43,7 @@ Section: x11
 Priority: optional
 Architecture: $ARCH
 Depends: conky-all, x11-xserver-utils
-Recommends: x11-utils
+Recommends: x11-utils, curl, lm-sensors
 Maintainer: Franco Conidi (edmond) <fconidi@gmail.com>
 Homepage: https://syslinuxos.com
 Installed-Size: $INSTALLED_SIZE

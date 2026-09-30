@@ -4,5 +4,5 @@ Name=Conky-ring-stop
 Exec=/opt/scripts/conky-ring-stop.sh
 StartupNotify=false
 Terminal=false
-Icon=/usr/share/icons/logo-red-64.png
+Icon=/usr/share/pixmaps/syslinuxos-ring-conky-stop.png
 Categories=System;Monitor;
