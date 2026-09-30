@@ -6,7 +6,7 @@
 
 set -euo pipefail
 
-PKG_VERSION="0.1.7"
+PKG_VERSION="0.1.8"
 PKG_NAME="syslinuxos-ring-conky"
 ARCH="all"
 
@@ -125,6 +125,12 @@ case "$1" in
         if [ -d /run/systemd/system ]; then
             systemctl disable --now check_cpu.service >/dev/null 2>&1 || true
         fi
+        # Stop the running ring conky (launched from /opt/Sys-ring-conky)
+        for PID in $(pgrep -x conky 2>/dev/null); do
+            if [ "$(readlink /proc/"$PID"/cwd 2>/dev/null)" = "/opt/Sys-ring-conky" ]; then
+                kill "$PID" 2>/dev/null || true
+            fi
+        done
         ;;
     upgrade|failed-upgrade)
         ;;
