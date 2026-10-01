@@ -11,19 +11,48 @@ require("abstract")
 local S = require("rc/gauge")
 local to_draw_titles = true
 
--- set the appropriate cpu object according to the chosen value for `cpu_cores`
-local ncores = nil
-if     cpu_cores == 0  then ncores = S.cpu.cores._0cores
-elseif cpu_cores == 2  then ncores = S.cpu.cores._2cores
-elseif cpu_cores == 4  then ncores = S.cpu.cores._4cores
-elseif cpu_cores == 6  then ncores = S.cpu.cores._6cores
-elseif cpu_cores == 8  then ncores = S.cpu.cores._8cores
-elseif cpu_cores == 10 then ncores = S.cpu.cores._10cores
-elseif cpu_cores == 12 then ncores = S.cpu.cores._12cores
-else
-    print("ERROR. the provided value of cpu_cores is not valid. Defaulting to 4 cores")
-    ncores = S.cpu.cores._4cores
+-- cpu_cores is the number of logical CPUs. The hand-tuned layouts of rc/gauge.lua
+-- cover 0 (total only) and the even counts 2..12; every other count gets a
+-- layout computed by build_cpu_layout(), one ring per thread.
+
+-- Rings are spread between an inner and an outer radius (the bounds of the
+-- 12-thread layout); thickness follows the spacing, and the percentage label
+-- is written every k-th ring so the labels never pile up.
+local function build_cpu_layout(n)
+    local r_in, r_out = 82, 186
+    local layout = {}
+    local pitch = n > 1 and (r_out - r_in) / (n - 1) or 0
+    local thick = n > 1 and math.max(1.5, math.min(12, pitch * 0.85)) or 30
+    local step = math.max(1, math.ceil(9 / math.max(pitch, 0.1)))
+    local font = math.max(7, math.min(12, math.floor(math.max(pitch, 6) * step * 1.1)))
+    for i = 1, n do
+        local r = n > 1 and (r_in + (i - 1) * pitch) or 130
+        local text = nil
+        -- always label the innermost and the outermost ring, then every step-th
+        if i == 1 or i == n or (i - 1) % step == 0 then
+            text = { x = 205, y = S.cpu.y - r + 6, post_particle = "%", size = font }
+        end
+        layout["core" .. i] = { number = i, radius = r, thickness = thick, max_value = 100,
+                                begin_angle = 0, end_angle = -260, text = text }
+    end
+    layout.total = { number = 0, radius = 195, thickness = 2, max_value = 100,
+                     begin_angle = 0, end_angle = -260, text = nil }
+    layout.temperature = { number = -1, radius = 199, thickness = 2, max_value = 95,
+                           begin_angle = 45, end_angle = -300,
+                           text = { x = 345, y = 85, post_particle = "°C" } }
+    return layout
 end
+
+local ncores = nil
+local cpu_threads = tonumber(cpu_cores) or 4
+if cpu_threads <= 0 then
+    ncores = S.cpu.cores._0cores
+elseif cpu_threads <= 12 and cpu_threads % 2 == 0 then
+    ncores = S.cpu.cores["_" .. cpu_threads .. "cores"]
+else
+    ncores = build_cpu_layout(cpu_threads)
+end
+
 
 function start()
     draw_cpu()
@@ -48,7 +77,7 @@ function draw_single_cpu_core(coreN)
 
     if coreN.text ~= nil then
         local label = coreN.number < 0 and "CPU " or ""
-        write(coreN.text.x, coreN.text.y, label .. tostring(val) .. coreN.text.post_particle, 12, value_color)
+        write(coreN.text.x, coreN.text.y, label .. tostring(val) .. coreN.text.post_particle, coreN.text.size or 12, value_color)
     end
 end
 

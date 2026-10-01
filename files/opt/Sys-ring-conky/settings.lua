@@ -33,7 +33,9 @@ change_color_on_threshold = true
 
 --[[
 CPU Cores (threads really)
-valid values are: 0, 2, 4, 6, 8, 10, 12
+number of logical CPUs, detected at boot by check_cpu.sh. 0 draws only the
+total usage. Up to 12 threads every thread gets a ring; with more threads
+consecutive threads are grouped and each ring shows the group average.
 ]]
 cpu_cores = 4
 
