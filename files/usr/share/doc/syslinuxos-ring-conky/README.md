@@ -46,14 +46,6 @@ A 1920x1080 `scale = 1.0`, quindi il layout e' identico all'originale.
     Menu  ->  Conky-ring-start        # avvia
     Menu  ->  Conky-ring-stop         # arresta
 
-## Test su risoluzioni diverse
-
-In VirtualBox cambia la risoluzione dello schermo dell'ospite e riavvia il
-conky (stop + start). In alternativa, forza un fattore senza cambiare
-risoluzione:
-
-    CONKY_RING_SCALE=1.5 /opt/scripts/conky-ring-start.sh
-
 ## Dipendenze
 
 conky-all, x11-xserver-utils (xrandr). x11-utils (xdpyinfo) come fallback.

@@ -28,7 +28,6 @@ Sys-ring-conky is a conky theme that displays system resources usage in rings.
 ![blue light](.github/blue_light.jpg)
 
 
-
 More colors schemes are available. Choose a color from the `settings.lua` file and restart conky to take effect.
 
 ***
